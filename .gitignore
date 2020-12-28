@@ -1,4 +1,4 @@
-WifiCar\Client\bin\
+WifiCar/Client/bin/
 *.opendb
 *.opensdf
 *.vs
