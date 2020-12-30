@@ -14,6 +14,7 @@
     <ProjectGuid>{C5F80730-F44F-4478-BDAE-6634EFC2CA88}</ProjectGuid>
     <RootNamespace>ESP8266</RootNamespace>
     <ProjectName>ESP8266</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -71,7 +72,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)\$(ProjectName)\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\$(ProjectName)\bin\$(Platform)\$(Configuration)\int\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -93,8 +97,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\ESP8266;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\libraries\ESP8266WiFi\src;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266\avr;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266\libb64;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266\spiffs;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266\umm_malloc;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\variants\adafruit;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\tools\sdk\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\tools\sdk\lwip2\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\tools\sdk\libc\xtensa-lx106-elf\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\2.5.0-4-b40a506\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\2.5.0-4-b40a506\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\2.5.0-4-b40a506\xtensa-lx106-elf\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\2.5.0-4-b40a506\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>$(ProjectDir)__vm\.ESP8266.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\libraries\ESP8266WiFi\src;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266\avr;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266\libb64;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266\spiffs;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\cores\esp8266\umm_malloc;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\variants\adafruit;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\tools\sdk\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\tools\sdk\lwip2\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\tools\sdk\libc\xtensa-lx106-elf\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\2.5.0-4-b40a506\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\2.5.0-4-b40a506\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\2.5.0-4-b40a506\xtensa-lx106-elf\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\2.5.0-4-b40a506\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\sebas\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)..\__vm\.ESP8266.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PreprocessorDefinitions>__ESP8266_esp8266__;__ESP8266_ESP8266__;__ets__;ICACHE_FLASH;NONOSDK22x_190703=1;F_CPU=80000000L;LWIP_OPEN_SRC;TCP_MSS=536;LWIP_FEATURES=1;LWIP_IPV6=0;ARDUINO=108010;ARDUINO_ESP8266_ESP12;ARDUINO_ARCH_ESP8266;FLASHMODE_QIO;ESP8266;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -109,13 +113,13 @@
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)\$(ProjectName)\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\$(ProjectName)\bin\$(Platform)\$(Configuration)\int\</IntDir>
+  </PropertyGroup>
   <ItemGroup>
-    <None Include="ESP8266.ino">
+    <None Include="src\ESP8266.ino">
       <FileType>CppCode</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\arduino folders read me.txt">
     </None>
   </ItemGroup>
   <ItemGroup>

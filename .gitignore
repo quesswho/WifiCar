@@ -3,6 +3,7 @@
 WifiCar/Client/bin/
 WifiCar/ESP8266/bin/
 WifiCar/ESP8266/__vm/
+WifiCar/ESP8266/src/passwords.h
 *.opendb
 *.opensdf
 *.vs

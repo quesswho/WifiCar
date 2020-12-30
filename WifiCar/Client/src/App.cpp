@@ -3,13 +3,14 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Xinput.h>
 
-
 #include "Timer.h"
 
 #include <stdio.h>
 
+#include "../../ESP8266/src/passwords.h" // Includes secret authentication password
+
 App::App(std::string adress, int port)
-	: m_Adress(adress), m_Port(port), m_Closed(true), m_Connected(false), m_ControllerConnected(false), m_ControllerPort(-1), m_RStickDeadZoneX(2048), m_ServerHandle(INVALID_SOCKET)
+	: m_Adress(adress), m_Port(port), m_Closed(true), m_Connected(false), m_Authenticated(false), m_ControllerConnected(false), m_ControllerPort(-1), m_RStickDeadZoneX(2048), m_ServerHandle(INVALID_SOCKET)
 {}
 
 App::~App()
@@ -21,7 +22,10 @@ void App::Run()
 	
 	Init();
 	m_Connected = Connect();
-	if (m_Connected) printf("Connected to esp8266!");
+	if (m_Connected) {
+		printf("Connected to esp8266! Authenticating...\n");
+		SendPacket(AuthPacket(g_Password));
+	}
 	Timer t;
 	t.Start();
 	float elapsed = 0.0f;
@@ -52,7 +56,46 @@ void App::Run()
 
 void App::Update(float elapsed)
 {
-	static float sixtyHZ = 0.0f;
+	static uchar packetBuffer[PACKET_LENGTH];
+	if (!m_Authenticated)
+	{
+		// Have to put recv on another thread to be able to receive ping packet later.
+		int result = recv(m_ServerHandle, (char*)packetBuffer, PACKET_LENGTH, 0);
+		if (result > 0)
+		{
+			if (m_Authenticated)
+			{
+				if (packetBuffer[0] == 0xF1)
+				{
+					printf("Ping\n");
+				}
+			}
+			else
+			{
+				if (packetBuffer[0] == 0xF2)
+				{
+					printf("Client authenticated!\n");
+					m_Authenticated = true;
+				}
+			}
+		}
+		else if(result == 0)
+		{
+			printf("Connection closed.\n");
+			m_Authenticated = false;
+			m_Connected = false;
+		}
+		else
+		{
+			printf("Error: %d\n", WSAGetLastError());
+			m_Authenticated = false;
+			m_Connected = false;
+		}
+	}
+
+	static bool flatSteer = false; // When there in no input, don't send empty packets.
+	static bool flatGas = false;
+	static float tenHZ = 0.0f;
 	if (m_ControllerConnected)
 	{
 		XINPUT_STATE newState;
@@ -62,18 +105,32 @@ void App::Update(float elapsed)
 		{
 			newState.Gamepad.sThumbRX = 0;
 		}
+		static short gasPower = 0;
+		gasPower = newState.Gamepad.bRightTrigger - newState.Gamepad.bLeftTrigger;
 
-		sixtyHZ += elapsed;
-		if (sixtyHZ > 1.0f / 60.0f) // 60hz
+		tenHZ += elapsed;
+		if (tenHZ > 1.0f / 10.0f) // 60hz
 		{
-			sixtyHZ = 0.0f;
-			//std::cout << std::to_string(newState.Gamepad.bRightTrigger) << ", " << std::to_string(newState.Gamepad.sThumbRX) << std::endl;
+			tenHZ = 0.0f;
+			if (newState.Gamepad.sThumbRX != 0) flatSteer = false;
+			if (!flatSteer)
+			{
+				SendPacket(SteerPacket(newState.Gamepad.sThumbRX / 32));
+				if (newState.Gamepad.sThumbRX == 0) flatSteer = true;
+			}
+
+			if (gasPower != 0) flatGas = false;
+			if (!flatGas)
+			{
+				SendPacket(GasPacket(gasPower * 4));
+				if (gasPower == 0) flatGas = true;
+			}
 		}
 	}
 
 	static float halfSecond = 0.0f;
 	halfSecond += elapsed;
-	if (halfSecond > 0.5f) // Every 0.5s check for new controllers or disconnections
+	if (halfSecond > 0.5f) // Every 0.5s check for new controllers and send status packet
 	{
 		halfSecond = 0.0f;
 		for (int i = 0; i < XUSER_MAX_COUNT; i++)
@@ -91,6 +148,8 @@ void App::Update(float elapsed)
 				m_ControllerPort = -1;
 			}
 		}
+
+		SendPacket(); // Status Packet
 	}
 }
 
@@ -171,4 +230,43 @@ bool App::GetIpPort()
 	m_Port = port;
 	delete[] ip;
 	return true;
+}
+
+void App::SendPacket(AuthPacket auth) const
+{
+	static uchar packet[9] = { 0xF1 }; // Pre allocated packet and static because of optimization
+
+	memcpy(&packet[1], (char*)&auth.m_Password, 8);
+	send(m_ServerHandle, (char*)packet, 9, 0);
+	
+}
+
+void App::SendPacket(StatusPacket) const
+{
+	static const char packet = 0xF2;
+	send(m_ServerHandle, (char*)packet, 1, 0);
+}
+
+void App::SendPacket(PingPacket ping) const
+{
+	static uchar packet[5] = { 0x1F }; // Pre allocated packet and static because of optimization
+
+	memcpy(&packet[1], (char*)&ping.m_Payload, 4);
+	send(m_ServerHandle, (char*)packet, 5, 0);
+}
+
+void App::SendPacket(GasPacket gas) const
+{
+	static uchar packet[3] = { 0x2F }; // Pre allocated packet and static because of optimization
+
+	memcpy(&packet[1], (char*)&gas.m_Power, 2);
+	send(m_ServerHandle, (char*)packet, 3, 0);
+}
+
+void App::SendPacket(SteerPacket steer) const
+{
+	static uchar packet[3] = { 0x3F }; // Pre allocated packet and static because of optimization
+
+	memcpy(&packet[1], (char*)&steer.m_Power, 2);
+	send(m_ServerHandle, (char*)packet, 3, 0);
 }
