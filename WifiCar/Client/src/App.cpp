@@ -21,6 +21,7 @@ void App::Run()
 	
 	Init();
 	m_Connected = Connect();
+	if (m_Connected) printf("Connected to esp8266!");
 	Timer t;
 	t.Start();
 	float elapsed = 0.0f;
