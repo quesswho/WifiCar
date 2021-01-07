@@ -13,38 +13,35 @@ bool g_Authenticate;
 const int ControlGasPin1 = 0;
 const int ControlGasPin2 = 4;
 const int GasPowerPin = 13;
-//const int GasPotPin = A0;
 int MotorSpeed = 0;
 
 const int ControlSteerPin1 = 16;
 const int ControlSteerPin2 = 14;
 const int SteerPowerPin = 12;
-//const int SteerPotPin = A1;
 int SteeringValue = 0;
 
 void setup() {
 	pinMode(ControlGasPin1, OUTPUT);
 	pinMode(ControlGasPin2, OUTPUT);
 	pinMode(GasPowerPin, OUTPUT);
-	pinMode(GasPowerPin, LOW);
+	digitalWrite(GasPowerPin, LOW);
 
 	pinMode(ControlSteerPin1, OUTPUT);
 	pinMode(ControlSteerPin2, OUTPUT);
 	pinMode(SteerPowerPin, OUTPUT);
-	pinMode(SteerPowerPin, LOW);
+	digitalWrite(SteerPowerPin, LOW);
 
 	Serial.begin(115200);
 	while(!Serial) {} // Wait for serial initialization
-
 
 	WiFi.begin(g_WifikName, g_WifiPassword);
 	while (WiFi.status() != WL_CONNECTED) { // Connect to wifi
 		delay(500);
 		Serial.println("Connecting...");
 	}
+
 	Serial.print("Connected to WiFi. Using ip: ");
 	Serial.println(WiFi.localIP());
-
 
 	g_WifiServer.begin();
 }
@@ -60,24 +57,24 @@ void loop()
 		Serial.println(g_Client.remoteIP());
 		while (g_Client.connected()) {
 
-			while (g_Client.available() > 0) {
+			while (g_Client.available() > 0) { // while receiving bytes
 				if (g_Authenticate)
 				{
 					switch (g_Client.read())
 					{
-						case 0xF2:
+						case 0xF2: // Status packet
 						{
 							time = millis();
 							break;
 						}
-						case 0x2F:
+						case 0x2F: // Gas packet
 						{
 							if (g_Client.available() == 2)
 							{
 								short power = 0;
 								g_Client.readBytes((char*)&power, 2);
 
-								if (power < 0)
+								if (power < 0) // Switch poles to go backwards or forwards
 								{
 									digitalWrite(ControlGasPin1, LOW);
 									digitalWrite(ControlGasPin2, HIGH);
@@ -92,14 +89,14 @@ void loop()
 							}
 							break;
 						}
-						case 0x3F:
+						case 0x3F: // Steer packet
 						{
 							if (g_Client.available() == 2)
 							{
 								short power = 0;
 								g_Client.readBytes((char*)&power, 2);
 
-								if (power < 0)
+								if (power < 0) // Switch poles to steer right or left
 								{
 									digitalWrite(ControlSteerPin1, LOW);
 									digitalWrite(ControlSteerPin2, HIGH);
@@ -118,7 +115,7 @@ void loop()
 				}
 				else
 				{
-					if (g_Client.read() == 0xF1)
+					if (g_Client.read() == 0xF1) // Check for auth packet, if not then disconnect
 					{
 						if (g_Client.available() == 8)
 						{
@@ -139,15 +136,17 @@ void loop()
 			}
 
 			delay(20); // Drain less current
-			if (time - millis() > 1000) // If 1s passed without status packet then turn of the motors.
+			if (time - millis() > 500) // If 1 second has passed without status packet then turn of the motors.
 			{
-				analogWrite(GasPowerPin, 0);
-				analogWrite(SteerPowerPin, 0);
+				digitalWrite(GasPowerPin, LOW);
+				digitalWrite(SteerPowerPin, LOW);
 			}
 		}
 
 		g_Client.stop();
 		Serial.println("Client disconnected");
+		digitalWrite(GasPowerPin, LOW);
+		digitalWrite(SteerPowerPin, LOW);
 		g_Authenticate = false;
 	}
 }

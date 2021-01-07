@@ -3,8 +3,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Xinput.h>
 
-#include "Timer.h"
-
 #include <stdio.h>
 
 #include "../../ESP8266/src/passwords.h" // Includes secret authentication password
@@ -19,17 +17,16 @@ App::~App()
 void App::Run()
 {
 	m_Closed = false;
-	
 	Init();
 	m_Connected = Connect();
 	if (m_Connected) {
 		printf("Connected to esp8266! Authenticating...\n");
 		SendPacket(AuthPacket(g_Password));
+		m_AuthLatency.Start();
 	}
 	Timer t;
 	t.Start();
 	float elapsed = 0.0f;
-
 
 	while (!m_Closed) // Main loop, check for changes in the controller
 	{
@@ -65,7 +62,7 @@ void App::Update(float elapsed)
 		{
 			if (m_Authenticated)
 			{
-				if (packetBuffer[0] == 0xF1)
+				if (packetBuffer[0] == 0xF1) // Not used right now
 				{
 					printf("Ping\n");
 				}
@@ -74,6 +71,7 @@ void App::Update(float elapsed)
 			{
 				if (packetBuffer[0] == 0xF2)
 				{
+					printf("Authenticated in %ums\n", (uint)roundf((float)m_AuthLatency.End() * 1000.0f));
 					printf("Client authenticated!\n");
 					m_Authenticated = true;
 				}
@@ -130,7 +128,7 @@ void App::Update(float elapsed)
 
 	static float halfSecond = 0.0f;
 	halfSecond += elapsed;
-	if (halfSecond > 0.5f) // Every 0.5s check for new controllers and send status packet
+	if (halfSecond > 0.25f) // Every 0.25s check for new controllers and send status packet
 	{
 		halfSecond = 0.0f;
 		for (int i = 0; i < XUSER_MAX_COUNT; i++)

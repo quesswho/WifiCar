@@ -4,6 +4,8 @@
 #include <ws2tcpip.h>
 #include <string>
 
+#include "Timer.h"
+
 using uchar = unsigned char;
 using uint = unsigned int;
 using uint64 = unsigned long long int;
@@ -59,6 +61,8 @@ private:
 	bool m_Closed;
 	bool m_Connected;
 	bool m_Authenticated;
+
+	Timer m_AuthLatency;
 
 	SOCKET m_ServerHandle;
 	void Update(float elapsed);

@@ -4,11 +4,8 @@
 class Timer {
 private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> m_Start;
-
-	float m_LastElapsed;
 public:
 	Timer()
-		: m_LastElapsed(0.0f)
 	{}
 
 	void Start() { m_Start = std::chrono::high_resolution_clock::now(); }
