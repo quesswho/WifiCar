@@ -136,7 +136,7 @@ void loop()
 			}
 
 			delay(20); // Drain less current
-			if (time - millis() > 500) // If 1 second has passed without status packet then turn of the motors.
+			if (time - millis() > 500) // If 0.5 seconds has passed without status packet then turn of the motors to prevent possible disaster.
 			{
 				digitalWrite(GasPowerPin, LOW);
 				digitalWrite(SteerPowerPin, LOW);
