@@ -2,13 +2,11 @@
 
 #include "passwords.h" // Includes information such as wifi name, wifi password and authentication password in the protocol.
 
-
 WiFiServer g_WifiServer(4596);
 
 WiFiClient g_Client;
 
 bool g_Authenticate;
-
 
 const int ControlGasPin1 = 0;
 const int ControlGasPin2 = 4;
@@ -19,6 +17,8 @@ const int ControlSteerPin1 = 16;
 const int ControlSteerPin2 = 14;
 const int SteerPowerPin = 12;
 int SteeringValue = 0;
+
+const int PowerSensor = 2;
 
 void setup() {
 	pinMode(ControlGasPin1, OUTPUT);
@@ -31,8 +31,13 @@ void setup() {
 	pinMode(SteerPowerPin, OUTPUT);
 	digitalWrite(SteerPowerPin, LOW);
 
+	pinMode(PowerSensor, OUTPUT);
+	digitalWrite(PowerSensor, LOW);
+
 	Serial.begin(115200);
 	while(!Serial) {} // Wait for serial initialization
+
+	Serial.println("Hello");
 
 	WiFi.begin(g_WifikName, g_WifiPassword);
 	while (WiFi.status() != WL_CONNECTED) { // Connect to wifi
@@ -69,46 +74,55 @@ void loop()
 						}
 						case 0x2F: // Gas packet
 						{
-							if (g_Client.available() == 2)
+							short power = 0;
+							g_Client.readBytes((char*)&power, 2);
+
+							if (power < 0) // Switch poles to go backwards or forwards
 							{
-								short power = 0;
-								g_Client.readBytes((char*)&power, 2);
-
-								if (power < 0) // Switch poles to go backwards or forwards
-								{
-									digitalWrite(ControlGasPin1, LOW);
-									digitalWrite(ControlGasPin2, HIGH);
-								}
-								else
-								{
-									digitalWrite(ControlGasPin1, HIGH);
-									digitalWrite(ControlGasPin2, LOW);
-								}
-
-								analogWrite(GasPowerPin, abs(power));
+								digitalWrite(ControlGasPin1, LOW);
+								digitalWrite(ControlGasPin2, HIGH);
 							}
+							else
+							{
+								digitalWrite(ControlGasPin1, HIGH);
+								digitalWrite(ControlGasPin2, LOW);
+							}
+
+							analogWrite(GasPowerPin, abs(power));
 							break;
 						}
 						case 0x3F: // Steer packet
 						{
-							if (g_Client.available() == 2)
+							short power = 0;
+							g_Client.readBytes((char*)&power, 2);
+
+							if (power < 0) // Switch poles to steer right or left
 							{
-								short power = 0;
-								g_Client.readBytes((char*)&power, 2);
-
-								if (power < 0) // Switch poles to steer right or left
-								{
-									digitalWrite(ControlSteerPin1, LOW);
-									digitalWrite(ControlSteerPin2, HIGH);
-								}
-								else
-								{
-									digitalWrite(ControlSteerPin1, HIGH);
-									digitalWrite(ControlSteerPin2, LOW);
-								}
-
-								analogWrite(SteerPowerPin, abs(power));
+								digitalWrite(ControlSteerPin1, LOW);
+								digitalWrite(ControlSteerPin2, HIGH);
 							}
+							else
+							{
+								digitalWrite(ControlSteerPin1, HIGH);
+								digitalWrite(ControlSteerPin2, LOW);
+							}
+
+							analogWrite(SteerPowerPin, abs(power));
+							break;
+						}
+						case 0x4F: // Temperature request
+						{
+							digitalWrite(PowerSensor, HIGH);
+							delay(1); // takes 2-4 microseconds to activate. 1ms just to be safe
+							SendTemperature(analogRead(0));
+							digitalWrite(PowerSensor, LOW);
+							break;
+						}
+						default:
+						{
+
+							Serial.println("Something is wrong");
+							Serial.println(g_Client.read());
 							break;
 						}
 					}
@@ -138,8 +152,8 @@ void loop()
 			delay(20); // Drain less current
 			if (time - millis() > 500) // If 0.5 seconds has passed without status packet then turn of the motors to prevent possible disaster.
 			{
-				digitalWrite(GasPowerPin, LOW);
-				digitalWrite(SteerPowerPin, LOW);
+				//digitalWrite(GasPowerPin, LOW);
+				//digitalWrite(SteerPowerPin, LOW);
 			}
 		}
 
@@ -155,4 +169,13 @@ void SendStatus()
 {
 	static char packet[1] = { 0xF2 };
 	g_Client.write((char*)packet, 1);
+}
+
+void SendTemperature(short int temp)
+{
+	Serial.println(temp);
+
+	static char packet[3] = { 0x4F };
+	memcpy(&packet[1], &temp, 2);
+	g_Client.write((char*)packet, 3);
 }

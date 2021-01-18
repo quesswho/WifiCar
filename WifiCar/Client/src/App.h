@@ -15,6 +15,7 @@ using uint64 = unsigned long long int;
 struct StatusPacket
 {};
 
+
 struct AuthPacket
 {
 	AuthPacket(uint64 password)
@@ -44,6 +45,9 @@ struct SteerPacket
 	short m_Power;
 };
 
+struct TempPacket
+{};
+
 class App
 {
 public:
@@ -67,6 +71,8 @@ private:
 	SOCKET m_ServerHandle;
 	void Update(float elapsed);
 
+	void Listen();
+
 	void Init();
 	bool Connect();
 
@@ -81,4 +87,5 @@ private:
 	void SendPacket(PingPacket auth) const;
 	void SendPacket(GasPacket auth) const;
 	void SendPacket(SteerPacket auth) const;
+	void SendPacket(TempPacket temp) const;
 };
