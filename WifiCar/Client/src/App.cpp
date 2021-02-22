@@ -223,7 +223,7 @@ bool App::Connect()
 
 bool App::GetIpPort()
 {
-	char* ip = new char[15];
+	static char* ip = new char[15];
 	int port = 0;
 	printf("Enter IPv4. E.g 192.168.1.123\n");
 	if (scanf("%s", ip) != 1)
@@ -231,6 +231,7 @@ bool App::GetIpPort()
 		printf("Invalid adress!\n");
 		return false;
 	}
+	if (ip[0] == 'r') return true;
 	printf("Enter port:\n");
 	if (scanf("%d", &port) != 1)
 	{
@@ -239,7 +240,6 @@ bool App::GetIpPort()
 	}
 	m_Adress = ip;
 	m_Port = port;
-	delete[] ip;
 	return true;
 }
 
