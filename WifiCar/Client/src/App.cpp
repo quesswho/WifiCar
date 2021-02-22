@@ -43,6 +43,7 @@ void App::Run()
 			if (GetIpPort())
 			{
 				m_Connected = Connect();
+				SendPacket(AuthPacket(g_Password));
 			}
 			else
 			{
