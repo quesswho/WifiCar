@@ -39,7 +39,7 @@ void setup() {
 
 	Serial.println("Hello");
 
-	WiFi.begin(g_WifikName, g_WifiPassword);
+	WiFi.begin(g_WifiName, g_WifiPassword);
 	while (WiFi.status() != WL_CONNECTED) { // Connect to wifi
 		delay(500);
 		Serial.println("Connecting...");
